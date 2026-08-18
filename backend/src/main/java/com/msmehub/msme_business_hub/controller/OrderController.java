@@ -3,7 +3,11 @@ package com.msmehub.msme_business_hub.controller;
 import com.msmehub.msme_business_hub.dto.OrderItemRequest;
 import com.msmehub.msme_business_hub.dto.OrderRequest;
 import com.msmehub.msme_business_hub.dto.StatusRequest;
-import com.msmehub.msme_business_hub.entity.*;
+import com.msmehub.msme_business_hub.entity.Customer;
+import com.msmehub.msme_business_hub.entity.CustomerOrder;
+import com.msmehub.msme_business_hub.entity.OrderItem;
+import com.msmehub.msme_business_hub.entity.OrderStatus;
+import com.msmehub.msme_business_hub.entity.Product;
 import com.msmehub.msme_business_hub.exception.ResourceNotFoundException;
 import com.msmehub.msme_business_hub.repository.CustomerOrderRepository;
 import com.msmehub.msme_business_hub.repository.CustomerRepository;
@@ -14,104 +18,312 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
+
     private final CustomerOrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
 
-    public OrderController(CustomerOrderRepository orderRepository,
-                           CustomerRepository customerRepository,
-                           ProductRepository productRepository) {
+    public OrderController(
+            CustomerOrderRepository orderRepository,
+            CustomerRepository customerRepository,
+            ProductRepository productRepository
+    ) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public List<CustomerOrder> getAll() {
-        return orderRepository.findAll();
+
+        List<CustomerOrder> orders =
+                orderRepository.findAllByOrderByIdDesc();
+
+        /*
+         * Force all relationships needed by the frontend
+         * to be initialized while the transaction is active.
+         */
+        orders.forEach(order -> {
+            if (order.getCustomer() != null) {
+                order.getCustomer().getName();
+            }
+
+            order.getItems().forEach(item -> {
+                if (item.getProduct() != null) {
+                    item.getProduct().getName();
+                    item.getProduct().getPrice();
+                    item.getProduct().getStock();
+                }
+            });
+        });
+
+        return orders;
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public CustomerOrder getById(@PathVariable Long id) {
-        return orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
+
+        CustomerOrder order =
+                orderRepository.findById(id)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Order not found: " + id
+                                )
+                        );
+
+        if (order.getCustomer() != null) {
+            order.getCustomer().getName();
+        }
+
+        order.getItems().forEach(item -> {
+            if (item.getProduct() != null) {
+                item.getProduct().getName();
+                item.getProduct().getPrice();
+                item.getProduct().getStock();
+            }
+        });
+
+        return order;
     }
 
     @PostMapping
     @Transactional
-    public CustomerOrder create(@RequestBody OrderRequest request) {
-        if (request.customerId() == null || request.items() == null || request.items().isEmpty()) {
-            throw new IllegalArgumentException("customerId and at least one order item are required");
+    public CustomerOrder create(
+            @RequestBody OrderRequest request
+    ) {
+
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "Order request is required"
+            );
         }
 
-        Customer customer = customerRepository.findById(request.customerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + request.customerId()));
+        if (request.customerId() == null) {
+            throw new IllegalArgumentException(
+                    "Customer is required"
+            );
+        }
 
-        CustomerOrder order = new CustomerOrder();
+        if (request.items() == null ||
+                request.items().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "At least one product is required"
+            );
+        }
+
+        Customer customer =
+                customerRepository.findById(
+                        request.customerId()
+                ).orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Customer not found: "
+                                        + request.customerId()
+                        )
+                );
+
+        /*
+         * Combine duplicate products.
+         */
+        Map<Long, Integer> quantities =
+                new HashMap<>();
+
+        for (OrderItemRequest item :
+                request.items()) {
+
+            if (item == null ||
+                    item.productId() == null) {
+
+                throw new IllegalArgumentException(
+                        "Invalid product"
+                );
+            }
+
+            if (item.quantity() == null ||
+                    item.quantity() < 1) {
+
+                throw new IllegalArgumentException(
+                        "Quantity must be at least 1"
+                );
+            }
+
+            quantities.merge(
+                    item.productId(),
+                    item.quantity(),
+                    Integer::sum
+            );
+        }
+
+        CustomerOrder order =
+                new CustomerOrder();
+
         order.setCustomer(customer);
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.PENDING);
 
-        long nextNumber = 10000L + orderRepository.count() + 1;
-        order.setOrderNumber("ORD-" + nextNumber);
+        /*
+         * Temporary number because ID is not
+         * generated until save().
+         */
+        order.setOrderNumber(
+                "TEMP-" + System.nanoTime()
+        );
 
-        BigDecimal subtotal = BigDecimal.ZERO;
+        BigDecimal subtotal =
+                BigDecimal.ZERO;
 
-        for (OrderItemRequest itemRequest : request.items()) {
-            if (itemRequest.productId() == null || itemRequest.quantity() == null || itemRequest.quantity() < 1) {
-                throw new IllegalArgumentException("Each item requires a valid productId and quantity");
+        for (Map.Entry<Long, Integer> entry :
+                quantities.entrySet()) {
+
+            Long productId = entry.getKey();
+            Integer quantity = entry.getValue();
+
+            Product product =
+                    productRepository.findById(productId)
+                            .orElseThrow(() ->
+                                    new ResourceNotFoundException(
+                                            "Product not found: "
+                                                    + productId
+                                    )
+                            );
+
+            int stock =
+                    product.getStock() == null
+                            ? 0
+                            : product.getStock();
+
+            if (stock < quantity) {
+                throw new IllegalArgumentException(
+                        "Insufficient stock for "
+                                + product.getName()
+                                + ". Available stock: "
+                                + stock
+                );
             }
 
-            Product product = productRepository.findById(itemRequest.productId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemRequest.productId()));
-
-            if (product.getStock() < itemRequest.quantity()) {
-                throw new IllegalArgumentException("Insufficient stock for product: " + product.getName());
+            if (product.getPrice() == null) {
+                throw new IllegalArgumentException(
+                        "Product price is missing for "
+                                + product.getName()
+                );
             }
 
-            BigDecimal lineTotal = product.getPrice()
-                    .multiply(BigDecimal.valueOf(itemRequest.quantity()))
-                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal lineTotal =
+                    product.getPrice()
+                            .multiply(
+                                    BigDecimal.valueOf(quantity)
+                            )
+                            .setScale(
+                                    2,
+                                    RoundingMode.HALF_UP
+                            );
 
-            OrderItem item = new OrderItem();
-            item.setOrder(order);
-            item.setProduct(product);
-            item.setQuantity(itemRequest.quantity());
-            item.setUnitPrice(product.getPrice());
-            item.setLineTotal(lineTotal);
-            order.getItems().add(item);
+            OrderItem orderItem =
+                    new OrderItem();
 
-            product.setStock(product.getStock() - itemRequest.quantity());
+            orderItem.setOrder(order);
+            orderItem.setProduct(product);
+            orderItem.setQuantity(quantity);
+            orderItem.setUnitPrice(product.getPrice());
+            orderItem.setLineTotal(lineTotal);
+
+            order.getItems().add(orderItem);
+
+            product.setStock(
+                    stock - quantity
+            );
+
             productRepository.save(product);
 
-            subtotal = subtotal.add(lineTotal);
+            subtotal =
+                    subtotal.add(lineTotal);
         }
 
-        BigDecimal tax = subtotal.multiply(new BigDecimal("0.18"))
-                .setScale(2, RoundingMode.HALF_UP);
-        BigDecimal total = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
+        subtotal =
+                subtotal.setScale(
+                        2,
+                        RoundingMode.HALF_UP
+                );
+
+        BigDecimal tax =
+                subtotal
+                        .multiply(
+                                new BigDecimal("0.18")
+                        )
+                        .setScale(
+                                2,
+                                RoundingMode.HALF_UP
+                        );
+
+        BigDecimal total =
+                subtotal
+                        .add(tax)
+                        .setScale(
+                                2,
+                                RoundingMode.HALF_UP
+                        );
 
         order.setSubtotal(subtotal);
         order.setTax(tax);
         order.setTotal(total);
 
-        return orderRepository.save(order);
+        CustomerOrder saved =
+                orderRepository.save(order);
+
+        /*
+         * Now the database ID exists.
+         */
+        saved.setOrderNumber(
+                "ORD-" + (10000L + saved.getId())
+        );
+
+        return orderRepository.save(saved);
     }
 
     @PutMapping("/{id}/status")
     @Transactional
-    public CustomerOrder updateStatus(@PathVariable Long id, @RequestBody StatusRequest request) {
-        CustomerOrder order = getById(id);
-        try {
-            order.setStatus(OrderStatus.valueOf(request.status().trim().toUpperCase()));
-        } catch (Exception ex) {
-            throw new IllegalArgumentException("Invalid order status");
+    public CustomerOrder updateStatus(
+            @PathVariable Long id,
+            @RequestBody StatusRequest request
+    ) {
+
+        if (request == null ||
+                request.status() == null ||
+                request.status().isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "Order status is required"
+            );
         }
+
+        CustomerOrder order =
+                getById(id);
+
+        try {
+
+            order.setStatus(
+                    OrderStatus.valueOf(
+                            request.status()
+                                    .trim()
+                                    .toUpperCase()
+                    )
+            );
+
+        } catch (IllegalArgumentException ex) {
+
+            throw new IllegalArgumentException(
+                    "Invalid order status"
+            );
+        }
+
         return orderRepository.save(order);
     }
 }

@@ -1,86 +1,160 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
-  headers: { "Content-Type": "application/json" }
+  baseURL:
+    import.meta.env.VITE_API_URL || "http://localhost:8080",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-const ownerId = () => {
+const getOwnerId = () => {
   const id = localStorage.getItem("msme_user_id");
-  if (!id) throw new Error("You are not logged in.");
-  return Number(id);
+
+  if (!id) {
+    throw new Error("You are not logged in.");
+  }
+
+  const numericId = Number(id);
+
+  if (!Number.isFinite(numericId) || numericId <= 0) {
+    throw new Error("Invalid user session.");
+  }
+
+  return numericId;
 };
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("msme_user_id");
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export const authAPI = {
-  register: (data) => api.post("/api/auth/register", data),
-  login: (data) => api.post("/api/auth/login", data)
+  register: (data) =>
+    api.post("/api/auth/register", data),
+
+  login: (data) =>
+    api.post("/api/auth/login", data),
 };
 
 export const customerAPI = {
   getAll: () =>
     api.get("/api/customers", {
-      params: { ownerId: ownerId() }
+      params: {
+        ownerId: getOwnerId(),
+      },
     }),
 
   create: (data) =>
     api.post("/api/customers", data, {
-      params: { ownerId: ownerId() }
+      params: {
+        ownerId: getOwnerId(),
+      },
     }),
-
-  update: (id, data) =>
-    api.put(`/api/customers/${id}`, data, {
-      params: { ownerId: ownerId() }
-    }),
-
-  delete: (id) =>
-    api.delete(`/api/customers/${id}`, {
-      params: { ownerId: ownerId() }
-    })
 };
 
 export const productAPI = {
   getAll: () =>
     api.get("/api/products", {
-      params: { ownerId: ownerId() }
+      params: {
+        ownerId: getOwnerId(),
+      },
     }),
 
   create: (data) =>
     api.post("/api/products", data, {
-      params: { ownerId: ownerId() }
+      params: {
+        ownerId: getOwnerId(),
+      },
     }),
-
-  update: (id, data) =>
-    api.put(`/api/products/${id}`, data, {
-      params: { ownerId: ownerId() }
-    }),
-
-  delete: (id) =>
-    api.delete(`/api/products/${id}`, {
-      params: { ownerId: ownerId() }
-    })
 };
 
 export const orderAPI = {
-  getAll: () => api.get("/api/orders", { params: { ownerId: ownerId() } }),
-  getById: (id) => api.get(`/api/orders/${id}`),
-  create: (data) => api.post("/api/orders", data, { params: { ownerId: ownerId() } }),
+  getAll: () =>
+    api.get("/api/orders", {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
+
+  getById: (id) =>
+    api.get(`/api/orders/${id}`, {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
+
+  create: (data) =>
+    api.post("/api/orders", data, {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
+
   updateStatus: (id, status) =>
-    api.put(`/api/orders/${id}/status`, { status }, { params: { ownerId: ownerId() } })
+    api.put(
+      `/api/orders/${id}/status`,
+      { status },
+      {
+        params: {
+          ownerId: getOwnerId(),
+        },
+      }
+    ),
 };
 
 export const invoiceAPI = {
-  getAll: () => api.get("/api/invoices", { params: { ownerId: ownerId() } }),
-  getById: (id) => api.get(`/api/invoices/${id}`),
-  create: (data) => api.post("/api/invoices", data, { params: { ownerId: ownerId() } })
+  getAll: () =>
+    api.get("/api/invoices", {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
+
+  getById: (id) =>
+    api.get(`/api/invoices/${id}`, {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
+
+  create: (data) =>
+    api.post("/api/invoices", data, {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
 };
 
 export const expenseAPI = {
-  getAll: () => api.get("/api/expenses", { params: { ownerId: ownerId() } }),
-  create: (data) => api.post("/api/expenses", data, { params: { ownerId: ownerId() } })
+  getAll: () =>
+    api.get("/api/expenses", {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
+
+  create: (data) =>
+    api.post("/api/expenses", data, {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
 };
 
 export const dashboardAPI = {
-  getSummary: () => api.get("/api/dashboard", { params: { ownerId: ownerId() } })
+  getSummary: () =>
+    api.get("/api/dashboard", {
+      params: {
+        ownerId: getOwnerId(),
+      },
+    }),
 };
 
 export default api;
