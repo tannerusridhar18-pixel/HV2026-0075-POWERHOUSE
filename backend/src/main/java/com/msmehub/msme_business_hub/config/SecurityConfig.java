@@ -17,29 +17,36 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
+        // Frontends allowed to call this backend
         configuration.setAllowedOrigins(List.of(
-                "https://hv-2026-0075-powerhouse-5ftr.vercel.app/"
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "https://hv-2026-0075-powerhouse-5ftr.vercel.app"
         ));
 
+        // HTTP methods allowed
         configuration.setAllowedMethods(List.of(
                 "GET",
                 "POST",
                 "PUT",
                 "DELETE",
+                "PATCH",
                 "OPTIONS"
         ));
 
+        // Headers allowed
         configuration.setAllowedHeaders(List.of("*"));
 
+        // Allow cookies/auth credentials if required
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
@@ -51,19 +58,27 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
 
         http
-            .csrf(c -> c.disable())
-            .cors(c -> {})
-            .sessionManagement(s ->
-                s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .csrf(csrf -> csrf.disable())
+
+            .cors(cors -> {})
+
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS
+                )
             )
-            .authorizeHttpRequests(a ->
-                a.anyRequest().permitAll()
+
+            .authorizeHttpRequests(auth ->
+                auth.anyRequest().permitAll()
             )
-            .formLogin(f -> f.disable())
-            .httpBasic(b -> b.disable());
+
+            .formLogin(form -> form.disable())
+
+            .httpBasic(basic -> basic.disable());
 
         return http.build();
     }
