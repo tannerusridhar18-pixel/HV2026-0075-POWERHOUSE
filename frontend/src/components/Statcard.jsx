@@ -1,29 +1,9 @@
-export default function StatCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  type = "blue"
-}) {
+export default function StatCard({ label, value, hint }) {
   return (
     <div className="stat-card">
-
-      <div className="stat-top">
-
-        <span>{title}</span>
-
-        <div className={`stat-icon ${type}`}>
-          <Icon size={19} />
-        </div>
-
-      </div>
-
-      <h2>{value}</h2>
-
-      <div className="stat-subtitle">
-        {subtitle}
-      </div>
-
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {hint && <small>{hint}</small>}
     </div>
   );
 }

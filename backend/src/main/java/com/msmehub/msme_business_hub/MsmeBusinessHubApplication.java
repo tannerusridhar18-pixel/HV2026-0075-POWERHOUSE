@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class MsmeBusinessHubApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(MsmeBusinessHubApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(MsmeBusinessHubApplication.class, args);
+    }
 }

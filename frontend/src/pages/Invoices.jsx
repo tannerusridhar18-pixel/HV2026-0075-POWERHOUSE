@@ -1,155 +1,16 @@
-import {
-  FileText,
-  Download,
-  Printer,
-  Search
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Search } from "lucide-react";
+import Modal from "../components/Modal";
+import { customerAPI, invoiceAPI, orderAPI } from "../services/api";
 
-const invoices = [
-  {
-    number: "INV-10023",
-    customer: "ABC Traders",
-    date: "18 Aug 2026",
-    amount: 38350,
-    status: "Generated"
-  },
-  {
-    number: "INV-10022",
-    customer: "Metro Supplies",
-    date: "17 Aug 2026",
-    amount: 21500,
-    status: "Paid"
-  },
-  {
-    number: "INV-10021",
-    customer: "Sri Manufacturing",
-    date: "15 Aug 2026",
-    amount: 18750,
-    status: "Pending"
-  }
-];
-
-export default function Invoices() {
-
-  return (
-    <div>
-
-      <div className="page-header">
-
-        <div>
-          <h1>Invoices</h1>
-
-          <p>
-            Generate and manage sales invoices
-          </p>
-        </div>
-
-      </div>
-
-      <div className="module-card">
-
-        <div className="table-toolbar">
-
-          <div className="table-search">
-
-            <Search size={17} />
-
-            <input
-              placeholder="Search invoice..."
-            />
-
-          </div>
-
-        </div>
-
-        <div className="table-wrapper">
-
-          <table>
-
-            <thead>
-
-              <tr>
-                <th>Invoice</th>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {invoices.map((invoice) => (
-
-                <tr key={invoice.number}>
-
-                  <td>
-
-                    <div className="table-person">
-
-                      <div className="product-icon">
-                        <FileText size={17} />
-                      </div>
-
-                      <strong>
-                        {invoice.number}
-                      </strong>
-
-                    </div>
-
-                  </td>
-
-                  <td>{invoice.customer}</td>
-
-                  <td>{invoice.date}</td>
-
-                  <td>
-                    ₹{invoice.amount.toLocaleString()}
-                  </td>
-
-                  <td>
-
-                    <span className="status confirmed">
-                      {invoice.status}
-                    </span>
-
-                  </td>
-
-                  <td>
-
-                    <div className="action-buttons">
-
-                      <button
-                        className="small-action"
-                        onClick={() => window.print()}
-                      >
-                        <Printer size={14} />
-                        Print
-                      </button>
-
-                      <button className="small-action">
-                        <Download size={14} />
-                        PDF
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
-
-    </div>
-  );
+export default function Invoices(){
+ const [invoices,setInvoices]=useState([]),[customers,setCustomers]=useState([]),[orders,setOrders]=useState([]),[show,setShow]=useState(false),[search,setSearch]=useState(""),[error,setError]=useState("");
+ const [form,setForm]=useState({customerId:"",orderId:"",amount:"",status:"GENERATED"});
+ const load=async()=>{try{const [i,c,o]=await Promise.all([invoiceAPI.getAll(),customerAPI.getAll(),orderAPI.getAll()]);setInvoices(i.data);setCustomers(c.data);setOrders(o.data)}catch(e){setError(e.response?.data?.error||"Unable to load invoices.")}};
+ useEffect(()=>{load()},[]);
+ const add=async e=>{e.preventDefault();try{await invoiceAPI.create({customerId:Number(form.customerId),orderId:form.orderId?Number(form.orderId):null,amount:form.orderId?null:Number(form.amount),status:form.status});setShow(false);setForm({customerId:"",orderId:"",amount:"",status:"GENERATED"});load()}catch(e){setError(e.response?.data?.error||"Unable to create invoice.")}};
+ const filtered=invoices.filter(i=>(i.invoiceNumber||"").toLowerCase().includes(search.toLowerCase())||(i.customer?.name||"").toLowerCase().includes(search.toLowerCase()));
+ return <div><div className="page-header"><div><h1>Invoices</h1><p>Generate and manage business invoices</p></div><button className="primary-btn" onClick={()=>setShow(true)}><Plus size={16}/> Create Invoice</button></div>{error&&<div className="error-message">{error}</div>}
+ <div className="module-card"><div className="table-toolbar"><div className="table-search"><Search size={17}/><input placeholder="Search invoices..." value={search} onChange={e=>setSearch(e.target.value)}/></div></div><div className="table-wrapper"><table><thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>{filtered.map(i=><tr key={i.id}><td><strong>{i.invoiceNumber}</strong></td><td>{i.customer?.name}</td><td>{i.invoiceDate}</td><td>₹{Number(i.amount).toLocaleString()}</td><td><span className="status confirmed">{i.status}</span></td></tr>)}</tbody></table></div></div>
+ {show&&<Modal title="Create Invoice" onClose={()=>setShow(false)}><form onSubmit={add}><div className="form-group"><label>Customer *</label><select required value={form.customerId} onChange={e=>setForm({...form,customerId:e.target.value})}><option value="">Select customer</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div><div className="form-group"><label>Order (optional)</label><select value={form.orderId} onChange={e=>setForm({...form,orderId:e.target.value})}><option value="">No order</option>{orders.map(o=><option key={o.id} value={o.id}>{o.orderNumber} — ₹{o.total}</option>)}</select></div>{!form.orderId&&<div className="form-group"><label>Amount *</label><input type="number" min="0" required value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/></div>}<div className="form-group"><label>Status</label><select value={form.status} onChange={e=>setForm({...form,status:e.target.value})}><option>GENERATED</option><option>PENDING</option><option>PAID</option><option>CANCELLED</option></select></div><div className="form-actions"><button type="button" className="secondary-btn" onClick={()=>setShow(false)}>Cancel</button><button className="primary-btn">Create Invoice</button></div></form></Modal>}</div>;
 }

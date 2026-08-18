@@ -1,31 +1,15 @@
-import React from "react";
 import { Outlet } from "react-router-dom";
-
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
-const Layout = () => {
+export default function Layout() {
   return (
-    <div className="app-layout">
-
-      {/* Left Navigation */}
+    <div className="application">
       <Sidebar />
-
-      {/* Main Application Area */}
-      <div className="main-area">
-
-        {/* Top Header */}
+      <main className="application-main">
         <Topbar />
-
-        {/* Page Content */}
-        <main className="page-content">
-          <Outlet />
-        </main>
-
-      </div>
-
+        <div className="page-content"><Outlet /></div>
+      </main>
     </div>
   );
-};
-
-export default Layout;
+}
