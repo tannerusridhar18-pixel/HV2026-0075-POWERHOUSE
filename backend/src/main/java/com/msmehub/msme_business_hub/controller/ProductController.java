@@ -33,4 +33,29 @@ public class ProductController {
         product.setId(null);
         return repository.save(product);
     }
+    @PutMapping("/{id}")
+public Product update(
+        @PathVariable Long id,
+        @Valid @RequestBody Product updatedProduct) {
+
+    Product product = repository.findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("Product not found: " + id));
+
+    product.setName(updatedProduct.getName());
+    product.setPrice(updatedProduct.getPrice());
+    product.setStock(updatedProduct.getStock());
+
+    return repository.save(product);
+}
+
+@DeleteMapping("/{id}")
+public void delete(@PathVariable Long id) {
+
+    Product product = repository.findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("Product not found: " + id));
+
+    repository.delete(product);
+}
 }

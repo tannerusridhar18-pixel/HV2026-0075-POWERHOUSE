@@ -33,4 +33,31 @@ public class CustomerController {
         customer.setId(null);
         return repository.save(customer);
     }
+
+    @PutMapping("/{id}")
+public Customer update(
+        @PathVariable Long id,
+        @Valid @RequestBody Customer updatedCustomer) {
+
+    Customer customer = repository.findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("Customer not found: " + id));
+
+    customer.setName(updatedCustomer.getName());
+    customer.setPhone(updatedCustomer.getPhone());
+    customer.setEmail(updatedCustomer.getEmail());
+    customer.setGstin(updatedCustomer.getGstin());
+
+    return repository.save(customer);
+}
+
+@DeleteMapping("/{id}")
+public void delete(@PathVariable Long id) {
+
+    Customer customer = repository.findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("Customer not found: " + id));
+
+    repository.delete(customer);
+}
 }

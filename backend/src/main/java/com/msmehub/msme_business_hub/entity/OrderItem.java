@@ -1,5 +1,7 @@
 package com.msmehub.msme_business_hub.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -11,9 +13,10 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id")
-    private CustomerOrder order;
+    @JsonIgnore
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "order_id")
+private CustomerOrder order;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id")

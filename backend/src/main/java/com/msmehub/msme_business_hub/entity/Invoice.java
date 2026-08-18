@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "invoices")
 public class Invoice {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,11 +16,11 @@ public class Invoice {
     @Column(name = "invoice_number", unique = true, nullable = false)
     private String invoiceNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id", unique = true)
     private CustomerOrder order;
 
@@ -35,19 +36,59 @@ public class Invoice {
 
     public Invoice() {}
 
-    public Long getId() { return id; }
-    public String getInvoiceNumber() { return invoiceNumber; }
-    public Customer getCustomer() { return customer; }
-    public CustomerOrder getOrder() { return order; }
-    public LocalDate getInvoiceDate() { return invoiceDate; }
-    public BigDecimal getAmount() { return amount; }
-    public InvoiceStatus getStatus() { return status; }
+    public Long getId() {
+        return id;
+    }
 
-    public void setId(Long id) { this.id = id; }
-    public void setInvoiceNumber(String invoiceNumber) { this.invoiceNumber = invoiceNumber; }
-    public void setCustomer(Customer customer) { this.customer = customer; }
-    public void setOrder(CustomerOrder order) { this.order = order; }
-    public void setInvoiceDate(LocalDate invoiceDate) { this.invoiceDate = invoiceDate; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
-    public void setStatus(InvoiceStatus status) { this.status = status; }
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public CustomerOrder getOrder() {
+        return order;
+    }
+
+    public LocalDate getInvoiceDate() {
+        return invoiceDate;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public InvoiceStatus getStatus() {
+        return status;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public void setOrder(CustomerOrder order) {
+        this.order = order;
+    }
+
+    public void setInvoiceDate(LocalDate invoiceDate) {
+        this.invoiceDate = invoiceDate;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public void setStatus(InvoiceStatus status) {
+        this.status = status;
+    }
 }

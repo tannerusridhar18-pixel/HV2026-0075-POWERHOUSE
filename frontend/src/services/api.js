@@ -17,13 +17,47 @@ export const authAPI = {
 };
 
 export const customerAPI = {
-  getAll: () => api.get("/api/customers", { params: { ownerId: ownerId() } }),
-  create: (data) => api.post("/api/customers", data, { params: { ownerId: ownerId() } })
+  getAll: () =>
+    api.get("/api/customers", {
+      params: { ownerId: ownerId() }
+    }),
+
+  create: (data) =>
+    api.post("/api/customers", data, {
+      params: { ownerId: ownerId() }
+    }),
+
+  update: (id, data) =>
+    api.put(`/api/customers/${id}`, data, {
+      params: { ownerId: ownerId() }
+    }),
+
+  delete: (id) =>
+    api.delete(`/api/customers/${id}`, {
+      params: { ownerId: ownerId() }
+    })
 };
 
 export const productAPI = {
-  getAll: () => api.get("/api/products", { params: { ownerId: ownerId() } }),
-  create: (data) => api.post("/api/products", data, { params: { ownerId: ownerId() } })
+  getAll: () =>
+    api.get("/api/products", {
+      params: { ownerId: ownerId() }
+    }),
+
+  create: (data) =>
+    api.post("/api/products", data, {
+      params: { ownerId: ownerId() }
+    }),
+
+  update: (id, data) =>
+    api.put(`/api/products/${id}`, data, {
+      params: { ownerId: ownerId() }
+    }),
+
+  delete: (id) =>
+    api.delete(`/api/products/${id}`, {
+      params: { ownerId: ownerId() }
+    })
 };
 
 export const orderAPI = {
