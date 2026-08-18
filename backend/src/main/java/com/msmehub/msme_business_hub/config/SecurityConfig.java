@@ -2,6 +2,7 @@ package com.msmehub.msme_business_hub.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,61 +25,72 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
-        // Frontends allowed to call this backend
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
+        configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:5173",
-                "https://hv-2026-0075-powerhouse-5ftr.vercel.app"
+                "http://127.0.0.1:5173",
+                "http://localhost:3000",
+                "https://hv-2026-0075-powerhouse.vercel.app"
         ));
 
-        // HTTP methods allowed
         configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "PATCH",
-                "OPTIONS"
+                HttpMethod.GET.name(),
+                HttpMethod.POST.name(),
+                HttpMethod.PUT.name(),
+                HttpMethod.DELETE.name(),
+                HttpMethod.PATCH.name(),
+                HttpMethod.OPTIONS.name()
         ));
 
-        // Headers allowed
         configuration.setAllowedHeaders(List.of("*"));
 
-        // Allow cookies/auth credentials if required
         configuration.setAllowCredentials(true);
+
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
 
         return source;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())
 
-            .cors(cors -> {})
+                .cors(cors -> {})
 
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
                 )
-            )
 
-            .authorizeHttpRequests(auth ->
-                auth.anyRequest().permitAll()
-            )
+                .authorizeHttpRequests(auth ->
+                        auth
+                                .requestMatchers(
+                                        HttpMethod.OPTIONS,
+                                        "/**"
+                                )
+                                .permitAll()
+                                .anyRequest()
+                                .permitAll()
+                )
 
-            .formLogin(form -> form.disable())
+                .formLogin(form -> form.disable())
 
-            .httpBasic(basic -> basic.disable());
+                .httpBasic(basic -> basic.disable());
 
         return http.build();
     }
