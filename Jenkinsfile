@@ -3,7 +3,27 @@ pipeline {
 
     stages {
 
-        
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        // =========================
+        // BACKEND
+        // =========================
+
+        stage('Backend - Build & Test') {
+            steps {
+                dir('backend') {
+                    bat 'mvnw.cmd clean package'
+                }
+            }
+        }
+
+        // =========================
+        // FRONTEND
+        // =========================
 
         stage('Frontend - Install Dependencies') {
             steps {
@@ -13,8 +33,6 @@ pipeline {
             }
         }
 
-        
-
         stage('Frontend - Build') {
             steps {
                 dir('frontend') {
@@ -22,25 +40,50 @@ pipeline {
                 }
             }
         }
+
+        // =========================
+        // ARCHIVE
+        // =========================
+
+        stage('Archive Backend') {
+            steps {
+                archiveArtifacts artifacts: 'backend/target/*.jar',
+                                 fingerprint: true
+            }
+        }
+
+        stage('Archive Frontend') {
+            steps {
+                archiveArtifacts artifacts: 'frontend/dist/**',
+                                 fingerprint: true
+            }
+        }
     }
 
     post {
+
         success {
             echo '======================================'
-            echo ' FRONTEND CI PIPELINE SUCCESSFUL'
-            echo ' Frontend tests and build passed'
+            echo ' MSME360 CI PIPELINE SUCCESSFUL'
+            echo '======================================'
+            echo ' Backend build and tests passed'
+            echo ' Frontend dependencies installed'
+            echo ' Frontend build passed'
+            echo ' Backend JAR archived'
+            echo ' Frontend build archived'
             echo '======================================'
         }
 
         failure {
             echo '======================================'
-            echo ' FRONTEND CI PIPELINE FAILED'
+            echo ' MSME360 CI PIPELINE FAILED'
+            echo '======================================'
             echo ' Check the failed stage above'
             echo '======================================'
         }
 
         always {
-            echo 'Frontend Jenkins pipeline completed.'
+            echo 'MSME360 Jenkins pipeline completed.'
         }
     }
 }
