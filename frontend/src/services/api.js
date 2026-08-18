@@ -157,4 +157,9 @@ export const dashboardAPI = {
     }),
 };
 
+export const aiAPI = {
+  chat: (data) =>
+    api.post("/api/ai/chat", data),
+};
+
 export default api;

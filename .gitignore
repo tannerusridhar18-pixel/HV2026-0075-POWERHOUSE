@@ -1,0 +1,8 @@
+# Maven build output
+backend/target/
+
+# Frontend build output
+frontend/dist/
+
+# Local backend secrets
+backend/src/main/resources/application-local.properties

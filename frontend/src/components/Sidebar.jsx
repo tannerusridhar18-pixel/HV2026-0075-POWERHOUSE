@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, Package, ShoppingCart, Receipt, WalletCards, BarChart3, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Package, ShoppingCart, Receipt, WalletCards, BarChart3, LogOut, Sparkles } from "lucide-react";
 
 const links = [
   ["/dashboard", "Dashboard", LayoutDashboard],
@@ -8,7 +8,8 @@ const links = [
   ["/orders", "Orders", ShoppingCart],
   ["/invoices", "Invoices", Receipt],
   ["/expenses", "Expenses", WalletCards],
-  ["/insights", "Insights", BarChart3]
+  ["/insights", "Insights", BarChart3],
+  ["/ai-advisor", "AI Advisor", Sparkles]
 ];
 
 export default function Sidebar() {

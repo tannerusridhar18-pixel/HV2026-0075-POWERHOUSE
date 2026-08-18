@@ -1,0 +1,8 @@
+# Local application secrets
+backend/src/main/resources/application-local.properties
+# Environment files
+.env
+.env.*
+!.env.example
+# Maven build output
+backend/target/classes/application-local.properties

@@ -9,6 +9,7 @@ import Orders from "./pages/Orders";
 import Invoices from "./pages/Invoices";
 import Expenses from "./pages/Expenses";
 import Insights from "./pages/Insights";
+import AIAdvisor from "./pages/AIAdvisor";
 
 function PrivateRoute({ children }) {
   return localStorage.getItem("msme_user_id")
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="invoices" element={<Invoices />} />
         <Route path="expenses" element={<Expenses />} />
         <Route path="insights" element={<Insights />} />
+        <Route path="ai-advisor" element={<AIAdvisor />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
