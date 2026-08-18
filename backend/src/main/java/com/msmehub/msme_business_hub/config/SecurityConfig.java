@@ -27,7 +27,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "https://hv-2026-0075-powerhouse-5ftr.vercel.app"
+                "https://hv-2026-0075-powerhouse-5ftr.vercel.app/"
         ));
 
         configuration.setAllowedMethods(List.of(
