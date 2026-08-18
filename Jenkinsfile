@@ -9,14 +9,6 @@ pipeline {
             }
         }
 
-        stage('Backend - Build & Test') {
-            steps {
-                dir('backend') {
-                    bat 'mvnw.cmd clean package'
-                }
-            }
-        }
-
         stage('Frontend - Install Dependencies') {
             steps {
                 dir('frontend') {
@@ -40,33 +32,25 @@ pipeline {
                 }
             }
         }
-
-        stage('Archive Backend') {
-            steps {
-                archiveArtifacts artifacts: 'backend/target/*.jar',
-                                 fingerprint: true
-            }
-        }
     }
 
     post {
         success {
             echo '======================================'
-            echo ' MSME360 CI PIPELINE SUCCESSFUL'
-            echo ' Backend build and tests passed'
+            echo ' FRONTEND CI PIPELINE SUCCESSFUL'
             echo ' Frontend tests and build passed'
             echo '======================================'
         }
 
         failure {
             echo '======================================'
-            echo ' MSME360 CI PIPELINE FAILED'
+            echo ' FRONTEND CI PIPELINE FAILED'
             echo ' Check the failed stage above'
             echo '======================================'
         }
 
         always {
-            echo 'MSME360 Jenkins pipeline completed.'
+            echo 'Frontend Jenkins pipeline completed.'
         }
     }
 }
