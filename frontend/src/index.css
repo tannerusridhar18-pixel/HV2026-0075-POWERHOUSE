@@ -1560,3 +1560,408 @@ td strong {
     width: 100%;
   }
 }
+
+/* =========================================
+   MSME SMARTBIZ HUB
+   REGISTRATION PAGE
+========================================= */
+
+.register-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.register-container {
+  width: 100%;
+  max-width: 1200px;
+  min-height: 700px;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 38% 62%;
+  box-shadow: 0 15px 50px rgba(15, 23, 42, 0.12);
+}
+
+
+/* LEFT SIDE */
+
+.register-brand {
+  background: linear-gradient(
+    145deg,
+    #0b1f3a,
+    #123b68
+  );
+
+  color: #ffffff;
+  padding: 55px 45px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.register-logo {
+  width: 58px;
+  height: 58px;
+
+  background: #ffffff;
+  color: #123b68;
+
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 21px;
+  font-weight: 800;
+
+  margin-bottom: 25px;
+}
+
+.register-brand h1 {
+  font-size: 31px;
+  margin: 0 0 15px;
+}
+
+.register-tagline {
+  color: #cbd8e8;
+  line-height: 1.7;
+  font-size: 14px;
+  max-width: 350px;
+  margin-bottom: 40px;
+}
+
+.register-features {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.register-feature {
+  display: flex;
+  gap: 13px;
+}
+
+.feature-icon {
+  width: 25px;
+  height: 25px;
+
+  background: rgba(255,255,255,0.13);
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.register-feature strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.register-feature span {
+  color: #b9c9dc;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+
+/* RIGHT SIDE */
+
+.register-form-area {
+  padding: 45px 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow-y: auto;
+}
+
+.register-form-card {
+  width: 100%;
+  max-width: 680px;
+}
+
+.register-header {
+  margin-bottom: 25px;
+}
+
+.register-label {
+  color: #1d5fa7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.register-header h2 {
+  color: #172033;
+  font-size: 28px;
+  margin: 8px 0;
+}
+
+.register-header p {
+  color: #6b7280;
+  font-size: 13px;
+  margin: 0;
+}
+
+
+/* SECTION TITLES */
+
+.section-title {
+  color: #263247;
+  font-size: 13px;
+  font-weight: 700;
+
+  margin: 22px 0 13px;
+
+  padding-bottom: 8px;
+
+  border-bottom: 1px solid #e6eaf0;
+}
+
+
+/* FORM ROW */
+
+.register-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.register-input-group {
+  margin-bottom: 14px;
+}
+
+.register-input-group label {
+  display: block;
+
+  color: #263247;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  margin-bottom: 7px;
+}
+
+.register-input-group label span {
+  color: #dc2626;
+}
+
+.register-input-group input,
+.register-input-group select {
+  width: 100%;
+  height: 44px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d7dee8;
+  border-radius: 7px;
+
+  padding: 0 12px;
+
+  background: #ffffff;
+
+  color: #1f2937;
+
+  outline: none;
+
+  font-size: 13px;
+
+  transition: 0.2s;
+}
+
+.register-input-group input:focus,
+.register-input-group select:focus {
+  border-color: #1d5fa7;
+
+  box-shadow:
+    0 0 0 3px rgba(29, 95, 167, 0.08);
+}
+
+.register-input-group input::placeholder {
+  color: #9aa4b2;
+}
+
+
+/* PASSWORD */
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 55px;
+}
+
+.password-wrapper button {
+  position: absolute;
+
+  right: 10px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  border: none;
+  background: transparent;
+
+  color: #1d5fa7;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+/* TERMS */
+
+.register-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: #687386;
+
+  font-size: 11px;
+
+  margin: 8px 0 20px;
+
+  line-height: 1.5;
+}
+
+.register-terms input {
+  margin-top: 2px;
+  accent-color: #123b68;
+}
+
+
+/* BUTTON */
+
+.create-account-btn {
+  width: 100%;
+  height: 47px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #123b68;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.create-account-btn:hover {
+  background: #0b2e54;
+  transform: translateY(-1px);
+}
+
+
+/* LOGIN LINK */
+
+.already-account {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 20px;
+
+  font-size: 12px;
+}
+
+.already-account span {
+  color: #6b7280;
+}
+
+.already-account a {
+  color: #1d5fa7;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.already-account a:hover {
+  text-decoration: underline;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+  .register-container {
+    grid-template-columns: 1fr;
+  }
+
+  .register-brand {
+    display: none;
+  }
+
+  .register-form-area {
+    padding: 35px 25px;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .register-page {
+    padding: 10px;
+  }
+
+  .register-container {
+    border-radius: 12px;
+  }
+
+  .register-form-area {
+    padding: 25px 18px;
+  }
+
+  .register-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+}
+
+.login-register-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 22px;
+
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.login-register-link a {
+  color: #123b68;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.login-register-link a:hover {
+  text-decoration: underline;
+}

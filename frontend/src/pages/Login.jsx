@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Building2, Lock, Mail } from "lucide-react";
 
 export default function Login() {
@@ -94,6 +94,14 @@ export default function Login() {
             <button className="login-button">
               Sign In
             </button>
+
+            <div className="login-register-link">
+  <span>Don't have an account?</span>
+
+  <Link to="/register">
+    Create Business Account
+  </Link>
+</div>
 
           </form>
 

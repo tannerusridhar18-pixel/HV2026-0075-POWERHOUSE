@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
 import Products from "./pages/Products";
@@ -18,6 +19,10 @@ function App() {
 
       {/* Login */}
       <Route path="/login" element={<Login />} />
+
+      <Route path="/login" element={<Login />} />
+
+<Route path="/register" element={<Register />} />
 
       {/* Main Application */}
       <Route path="/" element={<Layout />}>
