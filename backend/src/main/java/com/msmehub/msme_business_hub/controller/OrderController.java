@@ -12,6 +12,7 @@ import com.msmehub.msme_business_hub.exception.ResourceNotFoundException;
 import com.msmehub.msme_business_hub.repository.CustomerOrderRepository;
 import com.msmehub.msme_business_hub.repository.CustomerRepository;
 import com.msmehub.msme_business_hub.repository.ProductRepository;
+import com.msmehub.msme_business_hub.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,23 +30,26 @@ public class OrderController {
     private final CustomerOrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     public OrderController(
             CustomerOrderRepository orderRepository,
             CustomerRepository customerRepository,
-            ProductRepository productRepository
+            ProductRepository productRepository,
+            UserRepository userRepository
     ) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
     @Transactional(readOnly = true)
     public List<CustomerOrder> getAll() {
-
+        Long userId = getCurrentUserId();
         List<CustomerOrder> orders =
-                orderRepository.findAllByOrderByIdDesc();
+                orderRepository.findAllByUserIdOrderByIdDesc(userId);
 
         /*
          * Force all relationships needed by the frontend
@@ -71,9 +75,9 @@ public class OrderController {
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     public CustomerOrder getById(@PathVariable Long id) {
-
+        Long userId = getCurrentUserId();
         CustomerOrder order =
-                orderRepository.findById(id)
+                orderRepository.findByIdAndUserId(id, userId)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
                                         "Order not found: " + id
@@ -100,6 +104,7 @@ public class OrderController {
     public CustomerOrder create(
             @RequestBody OrderRequest request
     ) {
+        Long userId = getCurrentUserId();
 
         if (request == null) {
             throw new IllegalArgumentException(
@@ -121,8 +126,9 @@ public class OrderController {
         }
 
         Customer customer =
-                customerRepository.findById(
-                        request.customerId()
+                customerRepository.findByIdAndUserId(
+                        request.customerId(),
+                        userId
                 ).orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Customer not found: "
@@ -168,6 +174,7 @@ public class OrderController {
         order.setCustomer(customer);
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.PENDING);
+        order.setUser(userRepository.getReferenceById(userId));
 
         /*
          * Temporary number because ID is not
@@ -187,7 +194,7 @@ public class OrderController {
             Integer quantity = entry.getValue();
 
             Product product =
-                    productRepository.findById(productId)
+                    productRepository.findByIdAndUserId(productId, userId)
                             .orElseThrow(() ->
                                     new ResourceNotFoundException(
                                             "Product not found: "
@@ -294,7 +301,6 @@ public class OrderController {
             @PathVariable Long id,
             @RequestBody StatusRequest request
     ) {
-
         if (request == null ||
                 request.status() == null ||
                 request.status().isBlank()) {
@@ -308,7 +314,6 @@ public class OrderController {
                 getById(id);
 
         try {
-
             order.setStatus(
                     OrderStatus.valueOf(
                             request.status()
@@ -316,14 +321,21 @@ public class OrderController {
                                     .toUpperCase()
                     )
             );
-
         } catch (IllegalArgumentException ex) {
-
             throw new IllegalArgumentException(
                     "Invalid order status"
             );
         }
 
         return orderRepository.save(order);
+    }
+
+    private Long getCurrentUserId() {
+        org.springframework.security.core.Authentication auth = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof Long) {
+            return (Long) auth.getPrincipal();
+        }
+        throw new org.springframework.security.access.AccessDeniedException("Unauthorized access.");
     }
 }

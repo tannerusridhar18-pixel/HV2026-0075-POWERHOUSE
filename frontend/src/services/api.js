@@ -8,27 +8,28 @@ const api = axios.create({
   },
 });
 
-const getOwnerId = () => {
-  const id = localStorage.getItem("msme_user_id");
-
-  if (!id) {
-    throw new Error("You are not logged in.");
-  }
-
-  const numericId = Number(id);
-
-  if (!Number.isFinite(numericId) || numericId <= 0) {
-    throw new Error("Invalid user session.");
-  }
-
-  return numericId;
-};
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("msme_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("msme_user_id");
+      localStorage.removeItem("msme_business_name");
+      localStorage.removeItem("msme_owner_name");
+      localStorage.removeItem("msme_email");
+      localStorage.removeItem("msme_token");
+      // Optional: force a reload to boot the user out to login screen
+      // window.location.href = "/";
     }
 
     return Promise.reject(error);
@@ -45,116 +46,56 @@ export const authAPI = {
 
 export const customerAPI = {
   getAll: () =>
-    api.get("/api/customers", {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.get("/api/customers"),
 
   create: (data) =>
-    api.post("/api/customers", data, {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.post("/api/customers", data),
 };
 
 export const productAPI = {
   getAll: () =>
-    api.get("/api/products", {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.get("/api/products"),
 
   create: (data) =>
-    api.post("/api/products", data, {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.post("/api/products", data),
 };
 
 export const orderAPI = {
   getAll: () =>
-    api.get("/api/orders", {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.get("/api/orders"),
 
   getById: (id) =>
-    api.get(`/api/orders/${id}`, {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.get(`/api/orders/${id}`),
 
   create: (data) =>
-    api.post("/api/orders", data, {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.post("/api/orders", data),
 
   updateStatus: (id, status) =>
-    api.put(
-      `/api/orders/${id}/status`,
-      { status },
-      {
-        params: {
-          ownerId: getOwnerId(),
-        },
-      }
-    ),
+    api.put(`/api/orders/${id}/status`, { status }),
 };
 
 export const invoiceAPI = {
   getAll: () =>
-    api.get("/api/invoices", {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.get("/api/invoices"),
 
   getById: (id) =>
-    api.get(`/api/invoices/${id}`, {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.get(`/api/invoices/${id}`),
 
   create: (data) =>
-    api.post("/api/invoices", data, {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.post("/api/invoices", data),
 };
 
 export const expenseAPI = {
   getAll: () =>
-    api.get("/api/expenses", {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.get("/api/expenses"),
 
   create: (data) =>
-    api.post("/api/expenses", data, {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.post("/api/expenses", data),
 };
 
 export const dashboardAPI = {
   getSummary: () =>
-    api.get("/api/dashboard", {
-      params: {
-        ownerId: getOwnerId(),
-      },
-    }),
+    api.get("/api/dashboard"),
 };
 
 export const aiAPI = {

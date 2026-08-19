@@ -9,6 +9,7 @@ import com.msmehub.msme_business_hub.exception.ResourceNotFoundException;
 import com.msmehub.msme_business_hub.repository.CustomerOrderRepository;
 import com.msmehub.msme_business_hub.repository.CustomerRepository;
 import com.msmehub.msme_business_hub.repository.InvoiceRepository;
+import com.msmehub.msme_business_hub.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,15 +25,18 @@ public class InvoiceController {
     private final InvoiceRepository invoiceRepository;
     private final CustomerRepository customerRepository;
     private final CustomerOrderRepository orderRepository;
+    private final UserRepository userRepository;
 
     public InvoiceController(
             InvoiceRepository invoiceRepository,
             CustomerRepository customerRepository,
-            CustomerOrderRepository orderRepository
+            CustomerOrderRepository orderRepository,
+            UserRepository userRepository
     ) {
         this.invoiceRepository = invoiceRepository;
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
     }
 
     /*
@@ -41,9 +45,9 @@ public class InvoiceController {
     @GetMapping
     @Transactional(readOnly = true)
     public List<Invoice> getAll() {
-
+        Long userId = getCurrentUserId();
         List<Invoice> invoices =
-                invoiceRepository.findAllByOrderByIdDesc();
+                invoiceRepository.findAllByUserIdOrderByIdDesc(userId);
 
         /*
          * Force Hibernate to initialize all data
@@ -89,9 +93,9 @@ public class InvoiceController {
     public Invoice getById(
             @PathVariable Long id
     ) {
-
+        Long userId = getCurrentUserId();
         Invoice invoice =
-                invoiceRepository.findById(id)
+                invoiceRepository.findByIdAndUserId(id, userId)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
                                         "Invoice not found: " + id
@@ -134,6 +138,7 @@ public class InvoiceController {
     public Invoice create(
             @RequestBody InvoiceRequest request
     ) {
+        Long userId = getCurrentUserId();
 
         if (request == null) {
             throw new IllegalArgumentException(
@@ -148,8 +153,9 @@ public class InvoiceController {
         }
 
         Customer customer =
-                customerRepository.findById(
-                        request.customerId()
+                customerRepository.findByIdAndUserId(
+                        request.customerId(),
+                        userId
                 ).orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Customer not found: "
@@ -166,8 +172,9 @@ public class InvoiceController {
         if (request.orderId() != null) {
 
             order =
-                    orderRepository.findById(
-                            request.orderId()
+                    orderRepository.findByIdAndUserId(
+                            request.orderId(),
+                            userId
                     ).orElseThrow(() ->
                             new ResourceNotFoundException(
                                     "Order not found: "
@@ -196,8 +203,9 @@ public class InvoiceController {
              * This prevents a database constraint
              * error from becoming HTTP 500.
              */
-            if (invoiceRepository.existsByOrderId(
-                    request.orderId()
+            if (invoiceRepository.existsByOrderIdAndUserId(
+                    request.orderId(),
+                    userId
             )) {
 
                 throw new IllegalArgumentException(
@@ -277,6 +285,7 @@ public class InvoiceController {
         invoice.setInvoiceDate(LocalDate.now());
         invoice.setAmount(amount);
         invoice.setStatus(status);
+        invoice.setUser(userRepository.getReferenceById(userId));
 
         /*
          * Temporary unique number.
@@ -299,5 +308,14 @@ public class InvoiceController {
         );
 
         return invoiceRepository.save(saved);
+    }
+
+    private Long getCurrentUserId() {
+        org.springframework.security.core.Authentication auth = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof Long) {
+            return (Long) auth.getPrincipal();
+        }
+        throw new org.springframework.security.access.AccessDeniedException("Unauthorized access.");
     }
 }

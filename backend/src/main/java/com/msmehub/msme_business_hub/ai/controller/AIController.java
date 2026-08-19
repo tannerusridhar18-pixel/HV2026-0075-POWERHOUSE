@@ -31,9 +31,9 @@ public class AIController {
     ) {
 
         try {
-
+            Long userId = getCurrentUserId();
             String response =
-                    geminiService.chat(request);
+                    geminiService.chat(request, userId);
 
             return ResponseEntity.ok(
                     new AIChatResponse(response)
@@ -52,5 +52,14 @@ public class AIController {
                             )
                     );
         }
+    }
+
+    private Long getCurrentUserId() {
+        org.springframework.security.core.Authentication auth = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof Long) {
+            return (Long) auth.getPrincipal();
+        }
+        throw new org.springframework.security.access.AccessDeniedException("Unauthorized access.");
     }
 }

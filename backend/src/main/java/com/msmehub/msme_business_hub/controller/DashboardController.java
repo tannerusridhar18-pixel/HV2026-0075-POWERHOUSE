@@ -32,16 +32,19 @@ public class DashboardController {
 
     @GetMapping
     public Map<String, Object> summary() {
-        BigDecimal totalSales = orderRepository.findAll().stream()
+        Long userId = getCurrentUserId();
+
+        BigDecimal totalSales = orderRepository.findAllByUserId(userId).stream()
                 .map(order -> order.getTotal() == null ? BigDecimal.ZERO : order.getTotal())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalExpenses = expenseRepository.totalAmount();
+        BigDecimal totalExpenses = expenseRepository.totalAmountByUserId(userId);
         BigDecimal estimatedProfit = totalSales.subtract(totalExpenses);
-        long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING);
-        long lowStockProducts = productRepository.findAll().stream()
-                .filter(product -> product.getStock() < 100)
+        long pendingOrders = orderRepository.countByStatusAndUserId(OrderStatus.PENDING, userId);
+        long lowStockProducts = productRepository.findAllByUserId(userId).stream()
+                .filter(product -> product.getStock() != null && product.getStock() < 100)
                 .count();
+        long invoiceCount = invoiceRepository.countByUserId(userId);
 
         return Map.of(
                 "totalSales", totalSales,
@@ -49,7 +52,16 @@ public class DashboardController {
                 "estimatedProfit", estimatedProfit,
                 "pendingOrders", pendingOrders,
                 "lowStockProducts", lowStockProducts,
-                "invoiceCount", invoiceRepository.count()
+                "invoiceCount", invoiceCount
         );
+    }
+
+    private Long getCurrentUserId() {
+        org.springframework.security.core.Authentication auth = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof Long) {
+            return (Long) auth.getPrincipal();
+        }
+        throw new org.springframework.security.access.AccessDeniedException("Unauthorized access.");
     }
 }

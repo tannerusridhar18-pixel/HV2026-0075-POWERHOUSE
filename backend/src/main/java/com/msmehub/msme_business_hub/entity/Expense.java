@@ -47,4 +47,12 @@ public class Expense {
     public void setDescription(String description) { this.description = description; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
     public void setPayment(String payment) { this.payment = payment; }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private User user;
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }

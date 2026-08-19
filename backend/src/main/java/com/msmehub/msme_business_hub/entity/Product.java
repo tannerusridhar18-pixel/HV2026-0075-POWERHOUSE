@@ -35,4 +35,12 @@ public class Product {
     public void setName(String name) { this.name = name; }
     public void setPrice(BigDecimal price) { this.price = price; }
     public void setStock(Integer stock) { this.stock = stock; }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private User user;
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }

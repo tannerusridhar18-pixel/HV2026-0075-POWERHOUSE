@@ -6,7 +6,7 @@ import com.msmehub.msme_business_hub.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import java.util.UUID;
+import com.msmehub.msme_business_hub.config.JwtUtil;
 
 @RestController @RequestMapping("/api/auth")
 public class AuthController {
@@ -29,5 +29,5 @@ public class AuthController {
         return response(u);
     }
 
-    private AuthResponse response(User u){return new AuthResponse(UUID.randomUUID().toString(),u.getId(),u.getBusinessName(),u.getOwnerName(),u.getEmail());}
+    private AuthResponse response(User u){return new AuthResponse(JwtUtil.generateToken(u.getId(), u.getEmail()),u.getId(),u.getBusinessName(),u.getOwnerName(),u.getEmail());}
 }

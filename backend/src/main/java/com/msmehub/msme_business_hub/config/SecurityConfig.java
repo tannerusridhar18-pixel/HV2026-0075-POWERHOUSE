@@ -13,13 +13,20 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.annotation.PostConstruct;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins}")
     private List<String> allowedOrigins;
+
+    @PostConstruct
+    public void init() {
+        System.out.println("MSME SmartBiz Hub - Allowed CORS Origins: " + allowedOrigins);
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -32,7 +39,11 @@ public class SecurityConfig {
         CorsConfiguration configuration =
                 new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(allowedOrigins);
+        List<String> sanitizedOrigins = allowedOrigins.stream()
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        configuration.setAllowedOriginPatterns(sanitizedOrigins);
 
         configuration.setAllowedMethods(List.of(
                 HttpMethod.GET.name(),
@@ -83,9 +94,15 @@ public class SecurityConfig {
                                         "/**"
                                 )
                                 .permitAll()
-                                .anyRequest()
+                                .requestMatchers(
+                                        "/api/auth/**"
+                                )
                                 .permitAll()
+                                .anyRequest()
+                                .authenticated()
                 )
+
+                .addFilterBefore(new JwtAuthenticationFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
 
                 .formLogin(form -> form.disable())
 

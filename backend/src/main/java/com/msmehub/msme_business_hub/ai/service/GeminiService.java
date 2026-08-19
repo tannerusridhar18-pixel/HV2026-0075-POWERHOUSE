@@ -105,7 +105,7 @@ public class GeminiService {
                 .build();
     }
 
-    public String chat(AIChatRequest request) {
+    public String chat(AIChatRequest request, Long userId) {
 
         validateRequest(request);
 
@@ -116,7 +116,7 @@ public class GeminiService {
         }
 
         String businessContext =
-                businessContextService.buildBusinessContext();
+                businessContextService.buildBusinessContext(userId);
 
         String prompt =
                 buildPrompt(

@@ -53,17 +53,17 @@ public class BusinessContextService {
     }
 
     @Transactional(readOnly = true)
-    public String buildBusinessContext() {
+    public String buildBusinessContext(Long userId) {
 
-        List<CustomerOrder> orders = orderRepository.findAll();
+        List<CustomerOrder> orders = orderRepository.findAllByUserId(userId);
 
-        List<Expense> expenses = expenseRepository.findAll();
+        List<Expense> expenses = expenseRepository.findAllByUserId(userId);
 
-        List<Product> products = productRepository.findAll();
+        List<Product> products = productRepository.findAllByUserId(userId);
 
-        long customerCount = customerRepository.count();
+        long customerCount = customerRepository.countByUserId(userId);
 
-        long invoiceCount = invoiceRepository.count();
+        long invoiceCount = invoiceRepository.countByUserId(userId);
 
         /*
          * Cancelled orders must not contribute to revenue.
